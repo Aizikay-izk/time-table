@@ -1,0 +1,46 @@
+{
+  "name": "Academic Timetable System",
+  "description": "Complete timetable management system with sharing and invitations",
+  "repository": "https://github.com/yourusername/timetable-system",
+  "keywords": ["timetable", "academic", "school", "college", "php", "mysql"],
+  "website": "https://your-app-name.herokuapp.com",
+  "success_url": "/",
+  "env": {
+    "DB_HOST": {
+      "description": "Database host (use ClearDB)",
+      "value": ""
+    },
+    "DB_NAME": {
+      "description": "Database name",
+      "value": ""
+    },
+    "DB_USER": {
+      "description": "Database username",
+      "value": ""
+    },
+    "DB_PASSWORD": {
+      "description": "Database password",
+      "value": ""
+    },
+    "BASE_URL": {
+      "description": "Your app URL (without trailing slash)",
+      "value": "https://your-app-name.herokuapp.com"
+    },
+    "APP_ENV": {
+      "description": "Application environment",
+      "value": "production"
+    }
+  },
+  "addons": [
+    "cleardb:ignite",
+    "papertrail:choklad"
+  ],
+  "buildpacks": [
+    {
+      "url": "heroku/php"
+    }
+  ],
+  "scripts": {
+    "postdeploy": "php setup.php"
+  }
+}
