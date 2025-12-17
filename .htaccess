@@ -1,19 +1,36 @@
+# Heroku PHP Configuration
 RewriteEngine On
-RewriteBase /timetable-system/
 
-# Redirect to index.php for clean URLs
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
+# Force HTTPS
+RewriteCond %{HTTP:X-Forwarded-Proto} !https
+RewriteCond %{HTTPS} off
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
-# Share URLs
-RewriteRule ^share/([^/]+)/([^/]+)/?$ index.php?share=$1&day=$2 [L]
+# Remove trailing slashes
+RewriteRule ^(.*)/$ /$1 [L,R=301]
 
-# Invite URLs
-RewriteRule ^invite/([^/]+)/([^/]+)/?$ index.php?invite=$1&code=$2 [L]
+# Enable CORS
+Header set Access-Control-Allow-Origin "*"
+Header set Access-Control-Allow-Methods "GET, POST, OPTIONS"
+Header set Access-Control-Allow-Headers "Content-Type, Authorization"
 
-# Default routing
-RewriteRule ^(.*)$ index.php?page=$1 [L,QSA]
-
-# Security headers
+# Security Headers
 Header set X-Content-Type-Options "nosniff"
 Header set X-Frame-Options "SAMEORIGIN"
+Header set X-XSS-Protection "1; mode=block"
+Header set Referrer-Policy "strict-origin-when-cross-origin"
+
+# Cache static assets
+<FilesMatch "\.(css|js|jpg|jpeg|png|gif|ico|svg)$">
+    Header set Cache-Control "max-age=31536000, public"
+</FilesMatch>
+
+# Route everything to index.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php [QSA,L]
+
+# Custom error pages
+ErrorDocument 404 /index.php
+ErrorDocument 500 /index.php
+ErrorDocument 503 /index.php
