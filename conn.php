@@ -1,20 +1,77 @@
 <?php
-// Database configuration
-$host = 'localhost';
-$user = 'root';
-$password = '';
-$database = 'timetable_system';
+// Heroku Database Configuration
+function getDatabaseConfig() {
+    // Check for Heroku ClearDB
+    if (getenv('CLEARDB_DATABASE_URL')) {
+        $url = parse_url(getenv('CLEARDB_DATABASE_URL'));
+        return [
+            'host' => $url['host'],
+            'user' => $url['user'],
+            'password' => $url['pass'],
+            'database' => substr($url['path'], 1)
+        ];
+    }
+    
+    // Check for JawsDB MySQL
+    if (getenv('JAWSDB_URL')) {
+        $url = parse_url(getenv('JAWSDB_URL'));
+        return [
+            'host' => $url['host'],
+            'user' => $url['user'],
+            'password' => $url['pass'],
+            'database' => substr($url['path'], 1)
+        ];
+    }
+    
+    // Fallback to environment variables
+    return [
+        'host' => getenv('DB_HOST') ?: 'localhost',
+        'user' => getenv('DB_USER') ?: 'root',
+        'password' => getenv('DB_PASSWORD') ?: '',
+        'database' => getenv('DB_NAME') ?: 'timetable_system'
+    ];
+}
 
-// Create connection
-$conn = new mysqli($host, $user, $password, $database);
+// Get configuration
+$config = getDatabaseConfig();
+
+// Database connection
+$conn = new mysqli(
+    $config['host'],
+    $config['user'],
+    $config['password'],
+    $config['database']
+);
 
 // Check connection
 if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+    // Try to create database if it doesn't exist
+    if ($conn->connect_errno == 1049) {
+        $temp_conn = new mysqli($config['host'], $config['user'], $config['password']);
+        if (!$temp_conn->connect_error) {
+            $temp_conn->query("CREATE DATABASE IF NOT EXISTS " . $config['database']);
+            $temp_conn->select_db($config['database']);
+            $conn = $temp_conn;
+        }
+    } else {
+        die("Connection failed: " . $conn->connect_error);
+    }
 }
 
 // Set charset
 $conn->set_charset("utf8mb4");
+
+// Set BASE_URL for the application
+if (!defined('BASE_URL')) {
+    if (getenv('BASE_URL')) {
+        define('BASE_URL', getenv('BASE_URL'));
+    } elseif (isset($_SERVER['HTTP_HOST'])) {
+        $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
+        define('BASE_URL', $protocol . '://' . $_SERVER['HTTP_HOST']);
+    } else {
+        define('BASE_URL', 'https://your-app-name.herokuapp.com');
+    }
+}
 
 // Database setup function
 function setupDatabase($conn) {
@@ -70,8 +127,8 @@ function setupDatabase($conn) {
         expires_at DATETIME,
         is_active BOOLEAN DEFAULT TRUE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (section_code) REFERENCES sections(section_code) ON DELETE CASCADE,
-        FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE
+        INDEX idx_section_code (section_code),
+        INDEX idx_created_by (created_by)
     )";
     
     // Shared views tracking
@@ -99,7 +156,9 @@ function setupDatabase($conn) {
         $hashedPassword = password_hash('admin123', PASSWORD_DEFAULT);
         $insertSuperadmin = "INSERT INTO users (reg_number, password, full_name, role) 
                            VALUES ('superadmin', '$hashedPassword', 'System Administrator', 'superadmin')";
-        $conn->query($insertSuperadmin);
+        if (!$conn->query($insertSuperadmin)) {
+            error_log("Failed to create superadmin: " . $conn->error);
+        }
     }
 }
 
