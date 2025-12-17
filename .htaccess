@@ -1,0 +1,19 @@
+RewriteEngine On
+RewriteBase /timetable-system/
+
+# Redirect to index.php for clean URLs
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Share URLs
+RewriteRule ^share/([^/]+)/([^/]+)/?$ index.php?share=$1&day=$2 [L]
+
+# Invite URLs
+RewriteRule ^invite/([^/]+)/([^/]+)/?$ index.php?invite=$1&code=$2 [L]
+
+# Default routing
+RewriteRule ^(.*)$ index.php?page=$1 [L,QSA]
+
+# Security headers
+Header set X-Content-Type-Options "nosniff"
+Header set X-Frame-Options "SAMEORIGIN"
