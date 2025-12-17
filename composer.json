@@ -1,0 +1,31 @@
+{
+  "name": "academic/timetable-system",
+  "description": "Academic Timetable System with URL Sharing & Invitations",
+  "type": "project",
+  "require": {
+    "php": "^7.4|^8.0",
+    "ext-mysqli": "*",
+    "ext-pdo": "*",
+    "ext-json": "*"
+  },
+  "require-dev": {
+    "heroku/heroku-buildpack-php": "*"
+  },
+  "scripts": {
+    "post-install-cmd": [
+      "echo 'Heroku deployment successful!'"
+    ]
+  },
+  "config": {
+    "platform": {
+      "php": "8.1"
+    }
+  },
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Academic Timetable System",
+      "email": "admin@example.com"
+    }
+  ]
+}
