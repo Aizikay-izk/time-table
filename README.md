@@ -11,6 +11,8 @@ A complete web-based timetable management system with public sharing and invitat
 - **QR Code Support**: Generate QR codes for quick access
 - **Clean URLs**: User-friendly web addresses
 
+
+Here's a simple Python "Hello, World!" code: ```python print("Hello, World!") ``` You can run this code in any Python environment to see the output.
 ## 📋 Requirements
 
 - PHP 7.4 or higher
@@ -30,4 +32,5 @@ CREATE DATABASE timetable_system;
 USE timetable_system;
 
 -- The system will auto-create tables on first access
+
 -- Default superadmin: reg_number = 'superadmin', password = 'admin123'
